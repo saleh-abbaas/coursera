@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: coursera-data
+spec:
+  schedule: "* * * * *"
+  timezone: "Asia/Jerusalem"   # Default to local machine timezone
+  startingDeadlineSeconds: 0
+  concurrencyPolicy: "Replace"      # Default to "Allow"
+  successfulJobsHistoryLimit: 4     # Default 3
+  failedJobsHistoryLimit: 4         # Default 1
+  suspend: false                    # Set to "true" to suspend scheduling
+  workflowSpec:
+    entrypoint: crousera
+    templates:
+      - name: crousera
+        container:
+          image: docker/crousera:latest
+          command: [cowsay]
+          args: ["🕓 coursera. Scheduled on: {{workflow.scheduledTime}}"]

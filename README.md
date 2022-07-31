@@ -1,20 +1,31 @@
 Coursera Project
 
 Coding language:
-Python
+- Python
 Coding design:
-Argo work follow
+- Argo work follow
 
 Description:
 We need to retrieve some of course’s data from coursera website using web scraping technology throw python coding follow the following steps:
-1)	Get the pagination data from coursera default link
-2)	Store the number of pages to make loop throw all pages to retrieve the courses links and store it
-3)	Create loop on pages links to get all courses html data and store it
-4)	Convert html data into row data and store it
-5)	Check data if exist or not to store new or update
+1)	Get the number of pages
+2)	Get a list of course links
+3)	Get the courses HTMLs
+4)	Process the HTMLs to row data
+5)	Check the data if it exists or not to store the new data or update the existing data
 6)	Store all new changes
 
-To run this code, we want to install argo workflow and run the following code or you can use the python ide to run this code (…).
+
+To run this code using Python you need to follow these steps:
+1) install all requirement from [coursera_app/requirement.txt] using "pip3 install -r requirements.txt"
+2) run coursera_app/main.py using python3 main.py
+
+To run this code using Argo Workflow you need to follow these steps:
+1) install argo workflow
+2) open argo webpage
+3) import argo workflow/coursera-workflow.yaml file or use terminal "argo submit -n argo --watch https://github.com/Saleh-h-m-abbas/coursera/blob/main/argo%20workflow/coursera-workflow.yaml" 
 
 
-(documentation/FlowChart.png)
+
+Coursera Project FlowChart:
+
+![Alt text](documentation/FlowChart.jpg?raw=true "Title")

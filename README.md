@@ -2,7 +2,7 @@
 
 ### Software Architecture and design:
 - Python
-- Argo work follow
+- Argo workflow
 
 ### Description:
 

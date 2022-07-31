@@ -17,15 +17,15 @@ We need to retrieve some of course’s data from coursera website using web scra
 
 To run this code using Python you need to follow these steps:
 1) install all requirement from [coursera_app/requirement.txt] using "pip3 install -r requirements.txt"
-2) run coursera_app/main.py using python3 main.py
+2) run coursera_app/main.py using "python3 main.py"
 
 To run this code using Argo Workflow you need to follow these steps:
 1) install argo workflow
 2) open argo webpage
-3) import argo workflow/coursera-workflow.yaml file or use terminal "argo submit -n argo --watch https://github.com/Saleh-h-m-abbas/coursera/blob/main/argo%20workflow/coursera-workflow.yaml" 
+3) import argo_workflow/coursera-workflow.yaml file or using terminal "argo submit -n argo --watch https://github.com/Saleh-h-m-abbas/coursera/blob/main/argo%20workflow/coursera-workflow.yaml" 
 
 
 
 Coursera Project FlowChart:
 
-![Alt text](documentation/FlowChart.jpg?raw=true "Title")
+![Alt text](documentation/FlowChart.jpg?raw=true "coursera project flowchart")

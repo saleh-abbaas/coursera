@@ -6,63 +6,68 @@ import pandas as pd
 #Attribute
 links=[]
 dataDic=[]
+storeHtmlData=[]
 
 # Functions
-def webRequest(numberofPage):
-    url='https://www.coursera.org/directory/courses?page='+str(numberofPage)
+def getNumberOfPage():
+    url='https://www.coursera.org/directory/courses?page=1'
     response = requests.get(url)
-    return BeautifulSoup(response.content, 'lxml')
-
-def getNumberOfPage(soupData):
-    pagination = soupData.find_all('div',{"class":"pagination-controls-container"})
+    soupData=BeautifulSoup(response.content, 'html.parser')
+    pagination = soupData.find_all('div',class_="pagination-controls-container")
     for pagination_dev in pagination:
         page_number = pagination_dev.text.split("…")
-        return page_number[-1]
+        numberofpage = int(page_number[-1])
+    print(numberofpage)
+    return numberofpage
 
-def getAllPageData(max):
-    pagesList=[]
-    for page_number in range(0,max):
-        pagesList.append(webRequest(page_number))
-    return pagesList
 
-def getCourseLink(pageData):
-    page_data = pageData.findAll('a',{"class":"MuiTypography-root MuiLink-root MuiLink-underlineHover css-h830z8 MuiTypography-colorPrimary"})
-    for page in page_data:
-        links.append("https://www.coursera.org"+page.attrs['href'])
+def getListofCoursesLinks(max):
+    for page_num in range(0,max):
+        url='https://www.coursera.org/directory/courses?page='+str(page_num)
+        response = requests.get(url)
+        soupData=BeautifulSoup(response.content, 'html.parser')
+        page_data = soupData.find_all('a',class_="MuiTypography-root MuiLink-root MuiLink-underlineHover css-h830z8 MuiTypography-colorPrimary")
+        for page in page_data:
+            links.append("https://www.coursera.org"+page.attrs['href'])
+    # print(links)
     return links
 
-def getLinksData(link):
-    list_of_tag=[]
-    course_desc=None
-    course_rate=None
+
+
+def getCoursesHtmls(link):
     newresponse = requests.get(link)
-    newsoup=BeautifulSoup(newresponse.content, 'lxml')
+    newsoup=BeautifulSoup(newresponse.content, 'html.parser')
+    return newsoup
+
+def processHtmlData(newsoup):
+    list_of_tag=[]
+    course_rate=None
+    course_desc=None
     name=newsoup.find("h1")
-    rate=newsoup.find("div",{"class":"rc-ReviewsOverview__totals__rating"})
+    rate=newsoup.find("div",attrs={"class":"rc-ReviewsOverview__totals__rating"})
     if rate is not None:
         course_rate =rate.text
-    desc=newsoup.find("p",{"class":"cds-105 css-9it2qs cds-107"})
+    desc=newsoup.find("p",attrs={"class":"cds-105 css-9it2qs cds-107"})
     if not desc:
-        desc=newsoup.find("div",{"class":"m-t-1 description"})
+        desc=newsoup.find("div",attrs={"class":"m-t-1 description"})
         if desc is not None:
             course_desc=desc.find('p').text
     else:
         course_desc=desc.text
 
-    tags=newsoup.find_all("div",{"class":"_1ruggxy"})
+    tags=newsoup.find_all("div",class_="_1ruggxy")
     for tag in tags:
         world=tag.text.replace("Chevron Right", '')
         if "Browse" not in world:
             list_of_tag.append(world)
-    dataDic.append({"Name":name.text,"Url":link,"Rating":course_rate,"Tags":list_of_tag,"Description":course_desc})
-    return dataDic
+    return{"Name":name.text,"Url":'link',"Rating":course_rate,"Tags":list_of_tag,"Description":course_desc}
 
-def writeData(courses_dict,filename):
-    try:
-        df = pd.DataFrame.from_dict(courses_dict) 
-        df.to_csv (filename, index = False, header=True)
-        return True
-    except:
-        print("An exception occurred")
-        return False
+# def writeData(courses_dict,filename):
+#     try:
+#         df = pd.DataFrame.from_dict(courses_dict) 
+#         df.to_csv (filename, index = False, header=True)
+#         return True
+#     except:
+#         print("An exception occurred")
+#         return False
 

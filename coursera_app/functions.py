@@ -29,17 +29,14 @@ def getListofCoursesLinks(max):
         page_data = soupData.find_all('a',class_="MuiTypography-root MuiLink-root MuiLink-underlineHover css-h830z8 MuiTypography-colorPrimary")
         for page in page_data:
             links.append("https://www.coursera.org"+page.attrs['href'])
-    # print(links)
     return links
-
-
 
 def getCoursesHtmls(link):
     newresponse = requests.get(link)
     newsoup=BeautifulSoup(newresponse.content, 'html.parser')
     return newsoup
 
-def processHtmlData(newsoup):
+def processHtmlData(link,newsoup):
     list_of_tag=[]
     course_rate=None
     course_desc=None
@@ -54,20 +51,19 @@ def processHtmlData(newsoup):
             course_desc=desc.find('p').text
     else:
         course_desc=desc.text
-
     tags=newsoup.find_all("div",class_="_1ruggxy")
     for tag in tags:
         world=tag.text.replace("Chevron Right", '')
         if "Browse" not in world:
             list_of_tag.append(world)
-    return{"Name":name.text,"Url":'link',"Rating":course_rate,"Tags":list_of_tag,"Description":course_desc}
+    return{"Name":name.text,"Url":link,"Rating":course_rate,"Tags":list_of_tag,"Description":course_desc}
 
-# def writeData(courses_dict,filename):
-#     try:
-#         df = pd.DataFrame.from_dict(courses_dict) 
-#         df.to_csv (filename, index = False, header=True)
-#         return True
-#     except:
-#         print("An exception occurred")
-#         return False
+def writeData(courses_dict,filename):
+    try:
+        df = pd.DataFrame.from_dict(courses_dict) 
+        df.to_csv (filename, index = False, header=True)
+        return True
+    except:
+        print("An exception occجurred")
+        return False
 

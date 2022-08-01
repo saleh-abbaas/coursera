@@ -3,7 +3,7 @@ kind: CronWorkflow
 metadata:
   name: coursera-data
 spec:
-  schedule: "* * * * *"
+  schedule: "5 4 * * sun"
   timezone: "Asia/Jerusalem"   # Default to local machine timezone
   startingDeadlineSeconds: 0
   concurrencyPolicy: "Replace"      # Default to "Allow"
@@ -14,7 +14,76 @@ spec:
     entrypoint: crousera
     templates:
       - name: crousera
-        container:
-          image: docker/crousera:latest
-          command: [cowsay]
-          args: ["🕓 coursera. Scheduled on: {{workflow.scheduledTime}}"]
+        steps:
+        - - name: main
+            template: create-main
+
+      - name: create-main
+        script:
+          image: python:alpine3.6
+          command: [python]
+          source: |
+            import sys
+            import subprocess
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install',
+            'requests'])
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install',
+            'beautifulsoup4==4.11.1'])
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install',
+            'lxml==3.4.2'])
+            import requests
+            from bs4 import BeautifulSoup
+
+            url='https://www.coursera.org/directory/courses?page=1'
+            response = requests.get(url)
+            soupData=BeautifulSoup(response.content, 'html.parser')
+            pagination = soupData.find_all('div',class_="pagination-controls-container")
+            for pagination_dev in pagination:
+                page_number = pagination_dev.text.split("…")
+                numberofpage = int(page_number[-1])
+            print(numberofpage)
+
+            for page_num in range(0,2):
+                url='https://www.coursera.org/directory/courses?page='+str(page_num)
+                response = requests.get(url)
+                soupData=BeautifulSoup(response.content, 'html.parser')
+                page_data = soupData.find_all('a',class_="MuiTypography-root MuiLink-root MuiLink-underlineHover css-h830z8 MuiTypography-colorPrimary")
+                for page in page_data:
+                    links.append("https://www.coursera.org"+page.attrs['href'])
+            htmls=[]
+            for link in links:
+                newresponse = requests.get(link)
+                newsoup=BeautifulSoup(newresponse.content, 'html.parser')
+                htmls.append({"link":link,"data":newsoup})
+            data=[]
+            for html in htmls:
+                list_of_tag=[]
+                course_rate=None
+                course_desc=None
+                newsoup=html['data']
+                name=newsoup.find("h1")
+                rate=newsoup.find("div",attrs={"class":"rc-ReviewsOverview__totals__rating"})
+                if rate is not None:
+                    course_rate =rate.text
+                desc=newsoup.find("p",attrs={"class":"cds-105 css-9it2qs cds-107"})
+                if not desc:
+                    desc=newsoup.find("div",attrs={"class":"m-t-1 description"})
+                    if desc is not None:
+                        course_desc=desc.find('p').text
+                else:
+                    course_desc=desc.text
+                tags=newsoup.find_all("div",class_="_1ruggxy")
+                for tag in tags:
+                    world=tag.text.replace("Chevron Right", '')
+                    if "Browse" not in world:
+                        list_of_tag.append(world)
+                
+                data.append({"Name":name.text,"Url":link,"Rating":course_rate,"Tags":list_of_tag,"Description":course_desc})
+
+            try:
+                df = pd.DataFrame.from_dict(data) 
+                df.to_csv ('coursera.csv', index = False, header=True)
+                return True
+            except:
+                print("An exception occجurred")
+                return False
